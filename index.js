@@ -27,14 +27,24 @@ class TablePrompt extends Base {
       this.throwParamError('rows');
     }
 
-    this.columns = new Choices(this.opt.columns, []);
     this.pointer = 0;
     this.horizontalPointer = 0;
-    this.rows = new Choices(this.opt.rows, []);
-    this.default =  this.opt.default || undefined;
-    this.values = this.rows.pluck('value').map(() => this.default );
 
+    this.columns = new Choices(this.opt.columns, []);
+    this.rows = new Choices(this.opt.rows, []);
+    this.multiple = this.opt.multiple || false;
     this.pageSize = this.opt.pageSize || 5;
+
+    if (Array.isArray(this.opt.default)) {
+      this.values = this.multiple
+        ? this.rows.pluck('value').map((row, index) => this.opt.default[index] ? this.opt.default[index] : [])
+        : this.rows.pluck('value').map((row, index) => this.opt.default[index][0] ? [this.opt.default[index][0]] : [] );
+    } else {
+      this.values = this.rows.pluck('value').map(() => []) ;
+    }
+
+    // Make sure no default is set (so it won't be printed)
+    this.opt.default = null;
   }
 
   /**
@@ -136,7 +146,19 @@ class TablePrompt extends Base {
   onSpaceKey() {
     const value = this.columns.get(this.horizontalPointer).value;
 
-    this.values[this.pointer] = value;
+    const indexOfValue = this.values[this.pointer].indexOf(value);
+    const hasValue = indexOfValue > -1;
+    if (this.multiple) {
+      if (hasValue) {
+        this.values[this.pointer].splice(indexOfValue, 1);
+      } else {
+        this.values[this.pointer].push(value);
+      }
+
+    } else {
+      this.values[this.pointer] = hasValue ? []: [value];
+    }
+
     this.spaceKeyPressed = true;
     this.render();
   }
@@ -189,7 +211,7 @@ class TablePrompt extends Base {
           this.pointer === rowIndex &&
           this.horizontalPointer === columnIndex;
         const value =
-          column.value === this.values[rowIndex]
+          this.values[rowIndex].includes(column.value)
             ? figures.radioOn
             : figures.radioOff;
 
