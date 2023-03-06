@@ -1,7 +1,7 @@
 {
-  "name": "inquirer-table-prompt",
+  "name": "inquirer-table-multiselect",
   "version": "0.2.1",
-  "description": "A table-like prompt for Inquirer",
+  "description": "A multiselect table-like prompt for Inquirer",
   "main": "index.js",
   "dependencies": {
     "chalk": "^3.0.0",
