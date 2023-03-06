@@ -149,19 +149,17 @@ class TablePrompt extends Base {
   }
 
   render(error) {
-    let message = this.getQuestion();
     let bottomContent = "";
-
-    if (!this.spaceKeyPressed) {
-      message +=
-        "(Press " +
-        chalk.cyan.bold("<space>") +
-        " to select, " +
-        chalk.cyan.bold("<Up and Down>") +
-        " to move rows, " +
-        chalk.cyan.bold("<Left and Right>") +
-        " to move columns)";
-    }
+    let message = this.getQuestion() +
+      "(Press " +
+      chalk.cyan.bold("<Space>") +
+      " to select, " +
+      chalk.cyan.bold("<Up and Down>") +
+      " to move rows, " +
+      chalk.cyan.bold("<Left and Right>") +
+      " to move columns, " +
+      chalk.cyan.bold("<Enter>") +
+      " to confirm)";
 
     const [firstIndex, lastIndex] = this.paginate();
     const table = new Table({
