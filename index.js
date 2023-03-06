@@ -24,7 +24,7 @@ class TablePrompt extends Base {
     this.horizontalPointer = 0;
     this.rows = new Choices(this.opt.rows, []);
     this.default =  this.opt.default || undefined;
-    this.values = this.rows.filter(() => true).map(() => this.default );
+    this.values = this.rows.pluck('value').map(() => this.default );
 
     this.pageSize = this.opt.pageSize || 5;
   }
@@ -111,7 +111,9 @@ class TablePrompt extends Base {
     const length = this.columns.realLength;
 
     this.horizontalPointer =
-      this.horizontalPointer > 0 ? this.horizontalPointer - 1 : length - 1;
+      this.horizontalPointer > 0
+          ? this.horizontalPointer - 1
+          : length - 1;
     this.render();
   }
 
@@ -162,12 +164,10 @@ class TablePrompt extends Base {
       " to confirm)";
 
     const [firstIndex, lastIndex] = this.paginate();
+    const firstCellContent = chalk.reset.dim(`${firstIndex + 1}-${lastIndex + 1} of ${this.rows.realLength}`);
+    const columnsHeaders = this.columns.pluck("name").map(name => chalk.reset.bold(name));
     const table = new Table({
-      head: [
-        chalk.reset.dim(
-          `${firstIndex + 1}-${lastIndex + 1} of ${this.rows.realLength}`
-        )
-      ].concat(this.columns.pluck("name").map(name => chalk.reset.bold(name)))
+      head: [firstCellContent].concat(columnsHeaders)
     });
 
     this.rows.forEach((row, rowIndex) => {
@@ -186,7 +186,9 @@ class TablePrompt extends Base {
             : figures.radioOff;
 
         columnValues.push(
-          `${isSelected ? "[" : " "} ${value} ${isSelected ? "]" : " "}`
+            isSelected
+                ? `[ ${value} ]`
+                : `  ${value}  `
         );
       });
 
