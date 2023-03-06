@@ -19,6 +19,14 @@ class TablePrompt extends Base {
   constructor(questions, rl, answers) {
     super(questions, rl, answers);
 
+    if (!this.opt.columns) {
+      this.throwParamError('columns');
+    }
+
+    if (!this.opt.rows) {
+      this.throwParamError('rows');
+    }
+
     this.columns = new Choices(this.opt.columns, []);
     this.pointer = 0;
     this.horizontalPointer = 0;
