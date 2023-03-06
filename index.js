@@ -23,7 +23,8 @@ class TablePrompt extends Base {
     this.pointer = 0;
     this.horizontalPointer = 0;
     this.rows = new Choices(this.opt.rows, []);
-    this.values = this.rows.filter(() => true).map(() => undefined);
+    this.default =  this.opt.default || undefined;
+    this.values = this.rows.filter(() => true).map(() => this.default );
 
     this.pageSize = this.opt.pageSize || 5;
   }
