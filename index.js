@@ -19,13 +19,32 @@ class TablePrompt extends Base {
   constructor(questions, rl, answers) {
     super(questions, rl, answers);
 
-    this.columns = new Choices(this.opt.columns, []);
+    if (!this.opt.columns) {
+      this.throwParamError('columns');
+    }
+
+    if (!this.opt.rows) {
+      this.throwParamError('rows');
+    }
+
     this.pointer = 0;
     this.horizontalPointer = 0;
-    this.rows = new Choices(this.opt.rows, []);
-    this.values = this.columns.filter(() => true).map(() => undefined);
 
+    this.columns = new Choices(this.opt.columns, []);
+    this.rows = new Choices(this.opt.rows, []);
+    this.multiple = this.opt.multiple || false;
     this.pageSize = this.opt.pageSize || 5;
+
+    if (Array.isArray(this.opt.default)) {
+      this.values = this.multiple
+        ? this.rows.pluck('value').map((row, index) => this.opt.default[index] ? this.opt.default[index] : [])
+        : this.rows.pluck('value').map((row, index) => this.opt.default[index][0] ? [this.opt.default[index][0]] : [] );
+    } else {
+      this.values = this.rows.pluck('value').map(() => []) ;
+    }
+
+    // Make sure no default is set (so it won't be printed)
+    this.opt.default = null;
   }
 
   /**
@@ -110,7 +129,9 @@ class TablePrompt extends Base {
     const length = this.columns.realLength;
 
     this.horizontalPointer =
-      this.horizontalPointer > 0 ? this.horizontalPointer - 1 : length - 1;
+      this.horizontalPointer > 0
+          ? this.horizontalPointer - 1
+          : length - 1;
     this.render();
   }
 
@@ -125,7 +146,19 @@ class TablePrompt extends Base {
   onSpaceKey() {
     const value = this.columns.get(this.horizontalPointer).value;
 
-    this.values[this.pointer] = value;
+    const indexOfValue = this.values[this.pointer].indexOf(value);
+    const hasValue = indexOfValue > -1;
+    if (this.multiple) {
+      if (hasValue) {
+        this.values[this.pointer].splice(indexOfValue, 1);
+      } else {
+        this.values[this.pointer].push(value);
+      }
+
+    } else {
+      this.values[this.pointer] = hasValue ? []: [value];
+    }
+
     this.spaceKeyPressed = true;
     this.render();
   }
@@ -148,27 +181,23 @@ class TablePrompt extends Base {
   }
 
   render(error) {
-    let message = this.getQuestion();
     let bottomContent = "";
-
-    if (!this.spaceKeyPressed) {
-      message +=
-        "(Press " +
-        chalk.cyan.bold("<space>") +
-        " to select, " +
-        chalk.cyan.bold("<Up and Down>") +
-        " to move rows, " +
-        chalk.cyan.bold("<Left and Right>") +
-        " to move columns)";
-    }
+    let message = this.getQuestion() +
+      "(Press " +
+      chalk.cyan.bold("<Space>") +
+      " to select, " +
+      chalk.cyan.bold("<Up and Down>") +
+      " to move rows, " +
+      chalk.cyan.bold("<Left and Right>") +
+      " to move columns, " +
+      chalk.cyan.bold("<Enter>") +
+      " to confirm)";
 
     const [firstIndex, lastIndex] = this.paginate();
+    const firstCellContent = chalk.reset.dim(`${firstIndex + 1}-${lastIndex + 1} of ${this.rows.realLength}`);
+    const columnsHeaders = this.columns.pluck("name").map(name => chalk.reset.bold(name));
     const table = new Table({
-      head: [
-        chalk.reset.dim(
-          `${firstIndex + 1}-${lastIndex + 1} of ${this.rows.realLength}`
-        )
-      ].concat(this.columns.pluck("name").map(name => chalk.reset.bold(name)))
+      head: [firstCellContent].concat(columnsHeaders)
     });
 
     this.rows.forEach((row, rowIndex) => {
@@ -182,12 +211,14 @@ class TablePrompt extends Base {
           this.pointer === rowIndex &&
           this.horizontalPointer === columnIndex;
         const value =
-          column.value === this.values[rowIndex]
+          this.values[rowIndex].includes(column.value)
             ? figures.radioOn
             : figures.radioOff;
 
         columnValues.push(
-          `${isSelected ? "[" : " "} ${value} ${isSelected ? "]" : " "}`
+            isSelected
+                ? `[ ${value} ]`
+                : `  ${value}  `
         );
       });
 

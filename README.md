@@ -1,91 +1,84 @@
-# inquirer-table-prompt [![npm version](https://badge.fury.io/js/inquirer-table-prompt.svg)](https://badge.fury.io/js/inquirer-table-prompt)
+# inquirer-table-multiselect [![npm version](https://badge.fury.io/js/inquirer-table-multiselect.svg)](https://badge.fury.io/js/inquirer-table-multiselect)
 
-> A table-like prompt for [Inquirer.js](https://github.com/SBoudrias/Inquirer.js)
+> A multiselect table-like prompt for [Inquirer.js](https://github.com/SBoudrias/Inquirer.js)
+>
+> Forked from [inquirer-table-prompt](https://github.com/eduardoboucas/inquirer-table-prompt) by Eduardo Bouças, and inspired from [inquirer-tree-prompt](https://github.com/insightfuls/inquirer-tree-prompt) by Ben Schmidt.
 
-![Screen capture of the table prompt](screen-capture.gif)
+[![asciicast](https://asciinema.org/a/CmqHsisxc0OcJddBfIXSWGMvz.svg)](https://asciinema.org/a/CmqHsisxc0OcJddBfIXSWGMvz)
 
 ## Installation
 
 ```
-npm install --save inquirer-table-prompt
+npm install --save inquirer-table-multiselect
 ```
 
-## Usage
-
-After registering the prompt, set any question to have `type: "table"` to make use of this prompt.
-
-The result will be an array, containing the value for each row.
-
-```js
-inquirer.registerPrompt("table", require("./index"));
-
-inquirer
-  .prompt([
-    {
-      type: "table",
-      name: "workoutPlan",
-      message: "Choose your workout plan for next week",
-      columns: [
-        {
-          name: "Arms",
-          value: "arms"
-        },
-        {
-          name: "Legs",
-          value: "legs"
-        },
-        {
-          name: "Cardio",
-          value: "cardio"
-        },
-        {
-          name: "None",
-          value: undefined
-        }
-      ],
-      rows: [
-        {
-          name: "Monday",
-          value: 0
-        },
-        {
-          name: "Tuesday",
-          value: 1
-        },
-        {
-          name: "Wednesday",
-          value: 2
-        },
-        {
-          name: "Thursday",
-          value: 3
-        },
-        {
-          name: "Friday",
-          value: 4
-        },
-        {
-          name: "Saturday",
-          value: 5
-        },
-        {
-          name: "Sunday",
-          value: 6
-        }
-      ]
-    }
-  ])
-  .then(answers => {
-    /*
-    { workoutPlan:
-      [ 'arms', 'legs', 'cardio', undefined, 'legs', 'arms', undefined ] }    
-    */
-    console.log(answers);
-  });
-```
-
-### Options
+## Options
 
 - `columns`: Array of options to display as columns. Follows the same format as Inquirer's `choices`
 - `rows`: Array of options to display as rows. Follows the same format as Inquirer's `choices`
-- `pageSize`: Number of rows to display per page
+- `default`: (Array of Arrays) Array of default values should fit the same length as rows. Default: empty Array. If multiple is false, takes the first item.
+- `multiple`: (Boolean) if true, will enable to select multiple items. Default: false.
+- `pageSize`: (Number) Number of rows to display per page
+
+## Usage
+
+After registering the prompt, set your question with `type: "table-multiselect"`.
+
+The result will be an array of arrays with the selected values for each row.
+
+```js
+import inquirer from "inquirer";
+import InquirerTableMultiselect from "inquirer-table-multiselect";
+
+inquirer.registerPrompt("table-multiselect", InquirerTableMultiselect);
+
+const rows = [
+    'Friday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+];
+
+inquirer
+    .prompt([
+        {
+            type: 'table-multiselect',
+            name: 'mealPlan',
+            message: 'What do you want to eat next week ? ',
+            columns: [
+                {name: 'fries', value: 'fries'},
+                {name: 'potatoes', value: 'potatoes'},
+                {name: 'tomatoes', value: 'tomatoes'},
+                {name: 'burger', value: 'burger'},
+                {name: 'wrap', value: 'wrap'},
+                {name: 'wings', value: 'wings'},
+                {name: 'ketchup', value: 'ketchup'},
+                {name: 'mustard', value: 'mustard'},
+            ],
+            rows: rows,
+            default: rows.map(() => ['fries', 'burger', 'ketchup']),
+            multiple: true,
+            pageSize: 20,
+        }
+    ])
+  .then(answers => {
+    console.log(answers);
+/*
+      {
+          mealPlan: [
+              ['fries', 'burger', 'mustard'],
+              ['potatos', 'burger', 'ketchup'],
+              ['tomatoes', 'wrap'],
+              [],
+              ['fries', 'burger', 'ketchup'],
+              [],
+              ['fries', 'wings'],
+          ]
+      }
+*/
+  });
+```
+
