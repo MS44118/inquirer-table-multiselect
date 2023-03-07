@@ -1,7 +1,7 @@
 {
   "name": "inquirer-table-multiselect",
-  "version": "0.2.1",
-  "description": "A multiselect table-like prompt for Inquirer",
+  "version": "1.0.0",
+  "description": "An Inquirer plugin to prompt a table with multi answers",
   "main": "index.js",
   "dependencies": {
     "chalk": "^3.0.0",
@@ -22,19 +22,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eduardoboucas/inquirer-table-prompt.git"
+    "url": "git+https://github.com/MS44118/inquirer-table-multiselect.git"
   },
   "keywords": [
     "inquirer",
     "cli",
     "prompt"
   ],
-  "author": "Eduardo Bouças <mail@eduardoboucas.com>",
+  "author": "MS44118",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/eduardoboucas/inquirer-table-prompt/issues"
+    "url": "https://github.com/MS44118/inquirer-table-multiselect/issues"
   },
-  "homepage": "https://github.com/eduardoboucas/inquirer-table-prompt#readme",
+  "homepage": "https://github.com/MS44118/inquirer-table-multiselect#readme",
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
